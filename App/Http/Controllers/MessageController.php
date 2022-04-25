@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\FileHelper;
-use App\Helpers\ImageHelper;
+use App\Helpers\ImageMagick;
 use App\Http\Requests\Request;
 use App\Models\Message;
 use App\Models\User;
@@ -30,14 +30,20 @@ class MessageController extends AbstractController
         $fileurl = null;
         if (!empty($file)) {
             $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-            $checkAllowed = in_array($ext, ImageHelper::ALLOWED_TYPES);
-            if (!$checkAllowed) {
+            if (!in_array($ext, ['jpg', 'jpeg', 'png'])) {
                 $notice = "Расширение [" . strtoupper($ext) . "] недопустимо";
             } else {
                 $path = DIRECTORY_SEPARATOR . 'files' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR;
                 $filename = FileHelper::generatestring(15) . '.' . $ext;
                 $filepath = $path . $filename;
-                ImageHelper::resaveImage($file['tmp_name'], $ext, DOC_ROOT . $filepath);
+
+                $watermark = DOC_ROOT . '/files/watermark.png';
+                $image = new ImageMagick($file['tmp_name'], $ext);
+                $image->resizeWidthMoreHeight(200,200);
+                if(!empty($watermark)) {
+                    $image->watermark($watermark);
+                }
+                $image->saveToPath(DOC_ROOT . $filepath);
 
                 // костыль для винды :(
                 $fileurl = str_replace('\\', '/', $filepath);
