@@ -8,6 +8,7 @@
   "require": {
     "php": ">=7.4",
     "ext-gd": "*",
-    "ext-json": "*"
+    "ext-json": "*",
+    "symfony/mailer": "^5.4"
   }
 }

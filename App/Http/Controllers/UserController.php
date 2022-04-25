@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Request;
+use App\Mail\RegisterMail;
 use App\Models\User;
 use App\Repositories\UserRepository;
 use App\Services\UserService;
@@ -78,6 +79,8 @@ class UserController extends AbstractController
             $errorMessage = "Логин уже занят!";
         } else if (empty($data['fio'])) {
             $errorMessage = "Введите пожалуйста ФИО";
+        } else if (filter_var($data['login'], FILTER_VALIDATE_EMAIL)) {
+            $errorMessage = "Введите верный Email";
         } elseif (empty($data['password'])) {
             $errorMessage = "Введите пожалуйста Пароль";
         } elseif (mb_strlen($data['password']) < 4) {
@@ -98,6 +101,10 @@ class UserController extends AbstractController
         $userId = $this->userService->saveUser($data);
 
         $request->setUser($userId);
+
+        $mail = new RegisterMail();
+        $mail->sendMail($data['login']);
+
         $this->redirect('/blog/index');
     }
 
