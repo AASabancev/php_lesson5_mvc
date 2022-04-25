@@ -30,7 +30,7 @@ class UserRepository extends AbstractRepository
 
         $questions = str_repeat("?,", count($ids) - 1) . "?";
 
-        $query = "SELECT `" . join('`, `', $select) . "` FROM `users` WHERE `id` IN (" . $questions . ")";
+        $query = "SELECT " . ( $select ? "`" . join('`, `', $select) . "`" : "*") . " FROM `users` WHERE `id` IN (" . $questions . ")";
         $users = $db->fetchAll($query, __METHOD__, $ids);
 
         if (!$users) {
@@ -54,5 +54,23 @@ class UserRepository extends AbstractRepository
 
 
         return $user;
+    }
+
+
+
+    public function randlomList(array $select = null, int $limit = 5)
+    {
+        $db = Db::getInstance();
+
+        $query = "SELECT " . ( $select ? "`" . join('`, `', $select) . "`" : "*") . " FROM `users` ORDER BY RAND() LIMIT $limit";
+        $users = $db->fetchAll($query, __METHOD__, [
+            'limit' => $limit
+        ]);
+
+        if (!$users) {
+            return null;
+        }
+
+        return $users;
     }
 }

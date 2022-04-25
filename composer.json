@@ -9,8 +9,8 @@
     "php": ">=7.4",
     "ext-gd": "*",
     "ext-json": "*",
-    "ext-imagick": "*",
     "ext-fileinfo": "*",
-    "symfony/mailer": "^5.4"
+    "symfony/mailer": "^5.4",
+    "twig/twig": "1.*"
   }
 }
