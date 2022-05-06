@@ -2,12 +2,14 @@
 
 namespace App\Repositories;
 
+use Illuminate\Database\Eloquent\Builder;
+
 class AbstractRepository
 {
     protected $model;
 
-    function getModel($data)
+    function getModel(): Builder
     {
-        return new $this->model($data);
+        return (new $this->model())->newQuery();
     }
 }

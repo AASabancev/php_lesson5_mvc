@@ -41,8 +41,10 @@ class UserController extends AbstractController
         }
 
         if (!$errorMessage) {
-            $user = $this->userRepository->findByLogin($data['login']);
-            if (!$user || $user->getPassword() != User::hashPassword($data['password'])) {
+            $user = $this->userRepository
+                ->findByLogin($data['login']);
+
+            if (!$user || $user->password != User::hashPassword($data['password'])) {
                 $errorMessage = 'Логин или пароль не верный :(';
             }
         }
@@ -53,7 +55,7 @@ class UserController extends AbstractController
             ]);
         }
 
-        $request->setUser($user->getId());
+        $request->setUser($user->id);
         $this->redirect('/blog/index');
     }
 
@@ -71,7 +73,8 @@ class UserController extends AbstractController
             return $this->view->render('Auth/register.phtml');
         }
 
-        $existUser = $this->userRepository->findByLogin($data['login']);
+        $existUser = $this->userRepository
+            ->findByLogin($data['login']);
 
 
         $errorMessage = null;
@@ -79,7 +82,7 @@ class UserController extends AbstractController
             $errorMessage = "Логин уже занят!";
         } else if (empty($data['fio'])) {
             $errorMessage = "Введите пожалуйста ФИО";
-        } else if (filter_var($data['login'], FILTER_VALIDATE_EMAIL)) {
+        } else if (!filter_var($data['login'], FILTER_VALIDATE_EMAIL)) {
             $errorMessage = "Введите верный Email";
         } elseif (empty($data['password'])) {
             $errorMessage = "Введите пожалуйста Пароль";
@@ -97,10 +100,10 @@ class UserController extends AbstractController
             ]);
         }
 
+        $user = $this->userService
+            ->saveUser($data);
 
-        $userId = $this->userService->saveUser($data);
-
-        $request->setUser($userId);
+        $request->setUser($user->id);
 
         $mail = new RegisterMail();
         $mail->sendMail($data['login']);
@@ -110,23 +113,67 @@ class UserController extends AbstractController
 
     function index(Request $request)
     {
-        return $this->view->render('Auth/register.phtml');
+        return $this->view
+            ->render('Auth/register.phtml');
+    }
+
+    function update(Request $request)
+    {
+        $this->checkAuth($request, [User::ROLE_ADMIN]);
+
+        $id = $request->get('id');
+        $data = $request->only(['fio','login','password']);
+        $image = $request->getFile('image');
+
+        $this->userService
+            ->updateUser($id, $data, $image);
+
+        $this->redirect('/twig/users');
+    }
+
+    function create(Request $request)
+    {
+        $this->checkAuth($request, [User::ROLE_ADMIN]);
+
+        $data = $request->only(['fio','login','password']);
+        $image = $request->getFile('image');
+
+        $this->userService
+            ->saveUser($data, $image);
+
+        $this->redirect('/twig/users');
     }
 
     function profile(Request $request)
     {
         $id = $request->get('id');
 
-        return $this->view->render('User/profile.phtml', [
-            'user' => $this->userRepository->findById($id)
-        ]);
+        return $this->view
+            ->render('User/profile.phtml', [
+                'user' => $this->userRepository->findById($id)
+            ]);
+    }
+
+    function delete(Request $request)
+    {
+        $this->checkAuth($request, [User::ROLE_ADMIN]);
+        $id = $request->get('id');
+
+        $user = $this->userRepository
+            ->findById($id);
+
+        $user->deleteImage();
+        $user->delete();
+
+        $this->redirect('/twig/users');
     }
 
     function me(Request $request)
     {
         $id = $request->get('id');
 
-        $user = $this->userRepository->findById($id);
+        $user = $this->userRepository
+            ->findById($id);
 
         return $user;
     }

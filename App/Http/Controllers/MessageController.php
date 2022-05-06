@@ -5,18 +5,22 @@ namespace App\Http\Controllers;
 use App\Helpers\FileHelper;
 use App\Helpers\ImageMagick;
 use App\Http\Requests\Request;
-use App\Models\Message;
 use App\Models\User;
 use App\Repositories\MessageRepository;
+use App\Services\MessageService;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 class MessageController extends AbstractController
 {
     protected $messageRepository;
+    protected $messageService;
 
 
     public function __construct()
     {
         $this->messageRepository = new MessageRepository();
+        $this->messageService = new MessageService();
     }
 
     function new(Request $request)
@@ -24,57 +28,36 @@ class MessageController extends AbstractController
         $this->checkAuth($request);
 
         $data = $request->only(['text']);
-        $file = $request->getFile('file');
+        $image = $request->getFile('image');
 
-        $notice = null;
-        $fileurl = null;
-        if (!empty($file)) {
-            $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-            if (!in_array($ext, ['jpg', 'jpeg', 'png'])) {
-                $notice = "Расширение [" . strtoupper($ext) . "] недопустимо";
-            } else {
-                $path = DIRECTORY_SEPARATOR . 'files' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR;
-                $filename = FileHelper::generatestring(15) . '.' . $ext;
-                $filepath = $path . $filename;
+        if (!empty($data['text'])) {
 
-                $watermark = DOC_ROOT . '/files/watermark.png';
-                $image = new ImageMagick($file['tmp_name'], $ext);
-                $image->resizeWidthMoreHeight(200,200);
-                if(!empty($watermark)) {
-                    $image->watermark($watermark);
-                }
-                $image->saveToPath(DOC_ROOT . $filepath);
+            $message = $this->messageService
+                ->saveMessage([
+                    'user_id' => $request->user->id,
+                    'text' => $data['text'],
+                ]);
 
-                // костыль для винды :(
-                $fileurl = str_replace('\\', '/', $filepath);
-            }
+            $message->uploadImage($image);
+            $message->save();
         }
 
-
-        if (empty($notice) && !empty($data['text'])) {
-            $message = new Message([
-                'user_id' => $request->user->getId(),
-                'text' => $data['text'],
-                'fileurl' => $fileurl,
-            ]);
-            $message->create();
-        }
-
-        $this->redirect('/blog/index' . ($notice ? '?notice=' . urlencode($notice) : ''));
+        $this->redirect('/blog/index' . ($message ? '?notice=' . urlencode('Сообщение отправлено!') : ''));
     }
 
     /**
      * это так, для себя проверял
      * @param Request $request
-     * @return mixed|null
+     * @return Model|null
      */
-    function find(Request $request)
+    function find(Request $request): ?Model
     {
         $this->checkAuth($request);
 
         $id = $request->get('id');
 
-        $message = $this->messageRepository->findById($id);
+        $message = $this->messageRepository
+            ->findById($id);
 
         return $message;
     }
@@ -82,14 +65,15 @@ class MessageController extends AbstractController
     /**
      * Последние сообщения одного автора
      * @param Request $request
-     * @return array|null
+     * @return Collection
      */
-    function author(Request $request)
+    function author(Request $request): Collection
     {
         $this->checkAuth($request);
         $user_id = $request->get('user_id');
 
-        $message = $this->messageRepository->findByUserId($user_id);
+        $message = $this->messageRepository
+            ->findByUserId($user_id);
 
         return $message;
     }
@@ -97,11 +81,12 @@ class MessageController extends AbstractController
     /**
      * Список последних сообщений
      * @param Request $request
-     * @return array|null
+     * @return Collection
      */
-    function index(Request $request)
+    function index(Request $request): Collection
     {
-        $messages = $this->messageRepository->history();
+        $messages = $this->messageRepository
+            ->history();
 
         return $messages;
     }
@@ -117,12 +102,15 @@ class MessageController extends AbstractController
 
         $id = $request->get('id');
 
-        $message = $this->messageRepository->findById($id);
+        $message = $this->messageRepository
+            ->findById($id);
+
         if ($message) {
-            $notice = "Сообщение #" . $message->getId() . " успешно удалено";
+            $notice = "Сообщение #" . $message->id . " успешно удалено";
+            $message->deleteImage();
             $message->delete();
         } else {
-            $notice = "Сообщение #" . $message->getId() . " не найдено";
+            $notice = "Сообщение #" . $message->id . " не найдено";
         }
 
         $this->redirect('/blog/index?notice=' . urlencode($notice));

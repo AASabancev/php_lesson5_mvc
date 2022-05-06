@@ -3,52 +3,37 @@
 namespace App\Repositories;
 
 use App\Models\Message;
-use Base\Db;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 class MessageRepository extends AbstractRepository
 {
     protected $model = Message::class;
 
-    public function findById(int $id)
+    public function findById(int $id): ?Model
     {
-        $db = Db::getInstance();
-        $query = "SELECT * FROM `messages` WHERE `id` = :id";
-        $row = $db->fetchOne($query, __METHOD__, ['id' => $id]);
-
-        if (!$row) {
-            return null;
-        }
-
-        $message = $this->getModel($row);
+        $message = $this->getModel()
+            ->find($id);
 
         return $message;
     }
 
-
-    public function findByUserId(int $user_id)
+    public function findByUserId(int $user_id): Collection
     {
-        $db = Db::getInstance();
-        $query = "SELECT * FROM `messages` WHERE `user_id` = :user_id ORDER BY `created_at` DESC LIMIT 20";
-        $messages = $db->fetchAll($query, __METHOD__, [
-            'user_id' => $user_id
-        ]);
-
-        if (!$messages) {
-            return null;
-        }
+        $messages = $this->getModel()
+            ->where('user_id', $user_id)
+            ->get();
 
         return $messages;
     }
 
-    public function history()
+    public function history(): Collection
     {
-        $db = Db::getInstance();
-        $query = "SELECT * FROM `messages` ORDER BY `created_at` DESC LIMIT 20";
-        $messages = $db->fetchAll($query, __METHOD__, []);
-
-        if (!$messages) {
-            return null;
-        }
+        $messages = $this->getModel()
+            ->with('user')
+            ->orderByDesc('created_at')
+            ->limit(20)
+            ->get();
 
         return $messages;
     }

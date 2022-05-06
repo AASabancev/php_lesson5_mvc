@@ -11,6 +11,7 @@
     "ext-json": "*",
     "ext-fileinfo": "*",
     "symfony/mailer": "^5.4",
-    "twig/twig": "1.*"
+    "twig/twig": "1.*",
+    "illuminate/database": "^8.83"
   }
 }

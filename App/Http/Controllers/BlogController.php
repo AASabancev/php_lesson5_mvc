@@ -22,18 +22,10 @@ class BlogController extends AbstractController
         $this->checkAuth($request);
 
         $messages = $this->messageRepository->history();
-        $authorIDs = array_column($messages, 'user_id');
-        $users = $this->userRepository->searchUsersIn($authorIDs, ['id', 'fio']);
-
-        $authors = array_combine(
-            array_column($users, 'id'),
-            array_values($users)
-        );
 
         return $this->view->render('Blog/index.phtml', [
             'user' => $request->user,
             'messages' => $messages,
-            'authors' => $authors,
             'notice' => $request->get('notice'),
         ]);
     }

@@ -1,5 +1,5 @@
 <h1>Блог</h1>
-<h4>Привет, <?= $this->user->getFio() ?>! <a style="font-size:12px;" href="/user/logout">[Выход]</a></h4>
+<h4>Привет, <?= $this->user->fio ?>! <a style="font-size:12px;" href="/user/logout">[Выход]</a></h4>
 
 <? if ($this->notice): ?>
 	<div style="padding:20px; background-color: #fff8cb; font-size: 20px;"><?= $this->notice ?></div>
@@ -13,7 +13,7 @@
 
 		<div style="display: flex; justify-content: space-between;margin-top:10px;">
 			<div>
-				<input type="file" name="file">
+				<input type="file" name="image">
 			</div>
 			<div>
 				<button type="submit">Отправить</button>
@@ -24,23 +24,21 @@
 
 <div class="messages">
     <? if ($this->messages): ?>
-        <? foreach ($this->messages as $message):
-            $user = $this->authors[$message['user_id']] ?? null;
-            ?>
+        <? foreach ($this->messages as $message):?>
 			 <div class="message__w">
               <? if ($this->user->isAdmin()):?>
 					  <div class="message__delete-w">
-						  <a href="/message/delete?id=<?= $message['id'] ?>"
+						  <a href="/message/delete?id=<?= $message->id ?>"
 							  onclick="if(!confirm('Удалить сообщение?')){return false;}"
 							  class="message__delete-btn">удалить</a>
 					  </div>
               <? endif; ?>
-				 <div class="message__date"><?= $message['created_at'] ?></div>
+				 <div class="message__date"><?= $message->created_at ?></div>
 				 <div class="message__text">
-					 <b><?= $user ? $user['fio'] : 'Неизвестный' ?></b>: <?= $message['text'] ?>
+					 <b><?= $message->user ? $message->user->fio : 'Неизвестный' ?></b>: <?= $message->text ?>
 				 </div>
-              <? if ($message['fileurl']):?>
-					  <img src="<?= $message['fileurl'] ?>" class="message__img">
+              <? if ($message->image):?>
+					  <img src="<?= $message->image ?>" class="message__img">
               <? endif; ?>
 			 </div>
         <? endforeach; ?>

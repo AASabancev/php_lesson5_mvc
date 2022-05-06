@@ -16,6 +16,8 @@ class Application
 
     public function __construct()
     {
+        $dt = new Database();
+
         $this->router = new Route();
         $this->defaultRoutes();
         $this->view = new View();

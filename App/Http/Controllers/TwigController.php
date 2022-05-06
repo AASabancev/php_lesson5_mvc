@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Request;
+use App\Models\User;
 use App\Repositories\UserRepository;
 
 class TwigController extends AbstractController
@@ -15,11 +16,13 @@ class TwigController extends AbstractController
         $this->userRepository = new UserRepository();
     }
 
-    function test1(Request $request)
+    function users(Request $request)
     {
-        $users = $this->userRepository->randlomList();
+        $this->checkAuth($request, [User::ROLE_ADMIN]);
 
-        return $this->view->render('Twig/test1.twig', [
+        $users = $this->userRepository->list();
+
+        return $this->view->render('Twig/users.twig', [
             'users' => $users,
         ]);
     }

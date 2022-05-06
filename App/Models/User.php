@@ -2,69 +2,43 @@
 
 namespace App\Models;
 
-class User extends AbstractModel
+use App\Models\Traits\ImageTrait;
+use App\Observers\UserObserver;
+use Illuminate\Database\Eloquent\Model;
+
+class User extends Model
 {
+    use ImageTrait;
+
+    protected static function boot()
+    {
+        parent::boot();
+        self::observe(UserObserver::class);
+    }
+
     const ROLE_ADMIN = 1;
     const ROLE_USER = 2;
 
-    protected string $table = 'users';
-
-    protected array $fields = [
-        'id' => null,
-        'role_id' => null,
-        'fio' => null,
-        'login' => null,
-        'password' => null,
-        'created_at' => null,
-        'updated_at' => null,
+    protected $table = 'users';
+    protected $fillable = [
+        'id',
+        'role_id',
+        'image',
+        'fio',
+        'login',
+        'password',
+        'created_at',
+        'updated_at',
     ];
 
-    protected array $hidden = [
+    protected $hidden = [
         'role_id',
         'password',
     ];
 
     public function isAdmin(): string
     {
-        return $this->getRole() == self::ROLE_ADMIN;
-    }
-
-    public function getRole(): string
-    {
-        return $this->fields['role_id'];
-    }
-
-    public function getFio(): string
-    {
-        return $this->fields['fio'];
-    }
-
-    public function setFio(string $fio): self
-    {
-        $this->fields['fio'] = trim($fio);
-        return $this->setUpdatedAt();
-    }
-
-    public function getLogin(): string
-    {
-        return $this->fields['login'];
-    }
-
-    public function setLogin(string $login): self
-    {
-        $this->fields['login'] = trim($login);
-        return $this->setUpdatedAt();
-    }
-
-    public function getPassword(): string
-    {
-        return $this->fields['password'];
-    }
-
-    public function setPassword(string $password): self
-    {
-        $this->fields['password'] = self::hashPassword($password);
-        return $this->setUpdatedAt();
+        return $this->role_id == self::ROLE_ADMIN;
     }
 
     public static function hashPassword(string $password): string

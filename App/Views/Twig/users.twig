@@ -1,0 +1,76 @@
+<h1>Hello Twig example</h1>
+
+{% if users|length > 0 %}
+    <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <th>#</th>
+            <th>Фото</th>
+            <th>ФИО</th>
+            <th>Логин</th>
+            <th>Новый пароль</th>
+            <th>Создан</th>
+            <th>Изменен</th>
+            <th></th>
+        </thead>
+        {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>
+                    {% if user.image %}
+                        <img src="{{ user.image }}" style="max-width:100px;max-height: 100px;">
+                    {% endif %}
+                    <div>
+                        <input form="user{{ user.id }}" type="file" name="image">
+                    </div>
+                </td>
+                <td><input form="user{{ user.id }}" type="text" name="fio" value="{{ user.fio }}"></td>
+                <td><input form="user{{ user.id }}" type="text" name="login" value="{{ user.login }}"></td>
+                <td><input form="user{{ user.id }}" type="text" name="password"></td>
+                <td>{{ user.created_at }}</td>
+                <td>{{ user.updated_at }}</td>
+                <td>
+                    <button form="user{{ user.id }}" type="submit">Сохранить</button>
+                    <a href="/user/delete?id={{ user.id }}">
+                        <button type="button">Удалить</button>
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    {% for user in users %}
+        <form id="user{{ user.id }}" action="/user/update" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="id" value="{{ user.id }}">
+        </form>
+    {% endfor %}
+{% endif %}
+
+
+<div style="margin-top:50px;">
+    <h3>Добавление пользователя</h3>
+    <form action="/user/create" method="post" enctype="multipart/form-data">
+        <table>
+            <tr>
+                <td>ФИО</td>
+                <td><input type="text" name="fio" value="" required></td>
+            </tr>
+            <tr>
+                <td>Логин</td>
+                <td><input type="email" name="login" value="" required></td>
+            </tr>
+            <tr>
+                <td>Пароль</td>
+                <td><input type="text" name="password" required></td>
+            </tr>
+            <tr>
+                <td>Фото</td>
+                <td><input type="file" name="image"></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <button type="submit">Добавить</button>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>

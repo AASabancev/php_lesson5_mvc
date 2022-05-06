@@ -26,7 +26,7 @@ abstract class AbstractController
             $doRedirect = true;
         }
 
-        if ($request->user && !empty($roles) && !in_array($request->user->getRole(), $roles)) {
+        if ($request->user && !empty($roles) && !in_array($request->user->role_id, $roles)) {
             $doRedirect = true;
         }
 

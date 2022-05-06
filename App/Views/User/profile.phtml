@@ -7,7 +7,7 @@ $user = $this->user;
 
 if ($user) {
     ?>
-	<h1><?= $user->getFio() ?></h1>
+	<h1><?= $user->fio ?></h1>
 	<p>Создан: <?= $user->getCreatedAt() ?></p>
 	<p>Изменен: <?= $user->getUpdatedAt() ?></p>
     <?php

@@ -3,73 +3,52 @@
 namespace App\Repositories;
 
 use App\Models\User;
-use Base\Db;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 class UserRepository extends AbstractRepository
 {
     protected $model = User::class;
 
-    public function findById(int $id)
+    public function findById(int $id): ?Model
     {
-        $db = Db::getInstance();
-        $query = "SELECT * FROM `users` WHERE `id` = :id";
-        $row = $db->fetchOne($query, __METHOD__, ['id' => $id]);
-
-        if (!$row) {
-            return null;
-        }
-
-        $user = $this->getModel($row);
+        $user = $this->getModel()
+            ->find($id);
 
         return $user;
     }
 
-    public function searchUsersIn(array $ids, array $select = ['*'])
+    public function findByLogin(string $login): ?Model
     {
-        $db = Db::getInstance();
+        $user = $this->getModel()
+            ->where('login', $login)
+            ->first();
 
-        $questions = str_repeat("?,", count($ids) - 1) . "?";
+        return $user;
+    }
 
-        $query = "SELECT " . ( $select ? "`" . join('`, `', $select) . "`" : "*") . " FROM `users` WHERE `id` IN (" . $questions . ")";
-        $users = $db->fetchAll($query, __METHOD__, $ids);
-
-        if (!$users) {
-            return null;
-        }
+    public function list(array $select = null, int $limit = 50): Collection
+    {
+        $users = $this->getModel()
+            ->when($select, function ($query) use ($select) {
+                return $query->select($select);
+            })
+            ->orderBy('id')
+            ->limit($limit)
+            ->get();
 
         return $users;
     }
 
-    public function findByLogin(string $login)
+    public function randlomList(array $select = null, int $limit = 5): Collection
     {
-        $db = Db::getInstance();
-        $query = "SELECT * FROM `users` WHERE `login` = :login";
-        $row = $db->fetchOne($query, __METHOD__, ['login' => trim($login)]);
-
-        if (!$row) {
-            return null;
-        }
-
-        $user = $this->getModel($row);
-
-
-        return $user;
-    }
-
-
-
-    public function randlomList(array $select = null, int $limit = 5)
-    {
-        $db = Db::getInstance();
-
-        $query = "SELECT " . ( $select ? "`" . join('`, `', $select) . "`" : "*") . " FROM `users` ORDER BY RAND() LIMIT $limit";
-        $users = $db->fetchAll($query, __METHOD__, [
-            'limit' => $limit
-        ]);
-
-        if (!$users) {
-            return null;
-        }
+        $users = $this->getModel()
+            ->when($select, function ($query) use ($select) {
+                return $query->select($select);
+            })
+            ->inRandomOrder()
+            ->limit($limit)
+            ->get();
 
         return $users;
     }
