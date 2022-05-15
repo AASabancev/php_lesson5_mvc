@@ -2,17 +2,13 @@
 
 namespace App\Observers;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Message;
 
 class MessageObserver
 {
-    public function deleting(Model $model)
+    public function deleting(Message $message)
     {
-        // TODO: Сюда никак не могу попасть
-        var_dump(__METHOD__, '');
-        exit();
-
-        $model->deleteImage();
+        $message->deleteImage();
     }
 
 }

@@ -162,7 +162,6 @@ class UserController extends AbstractController
         $user = $this->userRepository
             ->findById($id);
 
-        $user->deleteImage();
         $user->delete();
 
         $this->redirect('/twig/users');

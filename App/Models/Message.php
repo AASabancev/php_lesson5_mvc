@@ -14,16 +14,6 @@ class Message extends Model
     {
         parent::boot();
         self::observe(MessageObserver::class);
-
-        static::deleting(function (Model $model) {
-            // TODO: Сюда никак не могу попасть
-            var_dump(__METHOD__, '');
-            exit();
-
-            $model->deleteImage();
-        });
-
-
     }
 
 //    protected $table = 'messages';

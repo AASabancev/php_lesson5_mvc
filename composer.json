@@ -12,6 +12,7 @@
     "ext-fileinfo": "*",
     "symfony/mailer": "^5.4",
     "twig/twig": "1.*",
-    "illuminate/database": "^8.83"
+    "illuminate/database": "^8.83",
+    "illuminate/events": "^8.83"
   }
 }

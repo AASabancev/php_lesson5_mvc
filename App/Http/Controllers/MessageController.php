@@ -107,7 +107,6 @@ class MessageController extends AbstractController
 
         if ($message) {
             $notice = "Сообщение #" . $message->id . " успешно удалено";
-            $message->deleteImage();
             $message->delete();
         } else {
             $notice = "Сообщение #" . $message->id . " не найдено";

@@ -2,27 +2,24 @@
 
 namespace App\Observers;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
 
 class UserObserver
 {
-    public function updating(Model $model)
+    public function creating(User $user)
     {
-        // TODO: Сюда никак не могу попасть
-        var_dump(__METHOD__, '');
-        exit();
+        $user->password = $user->hashPassword($user->password);
+    }
 
-        if ($model->isDirty('password')) {
-            $model->password = $model->hashPassword($model->password);
+    public function updating(User $user)
+    {
+        if ($user->isDirty('password')) {
+            $user->password = $user->hashPassword($user->password);
         }
     }
 
-    public function deleting(Model $model)
+    public function deleting(User $user)
     {
-        // TODO: Сюда никак не могу попасть
-        var_dump(__METHOD__, '');
-        exit();
-
-        $model->deleteImage();
+        $user->deleteImage();
     }
 }
